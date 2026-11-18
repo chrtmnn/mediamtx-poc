@@ -19,7 +19,7 @@ flowchart LR
 ```
 
 1. The PS5 starts an ordinary Twitch broadcast.
-2. Pi-hole answers `contribute.live-video.net` (and all its subdomains) with the PC's IP instead of Twitch's.
+2. Pi-hole answers `contribute.live-video.net` and `global-contribute.live-video.net` (and their subdomains) with the PC's IP instead of Twitch's.
    The PS5 already uses Pi-hole via DHCP, so nothing changes on the console.
 3. MediaMTX accepts the stream on `app/<stream key>` and relays it, without re-encoding, to the fixed path
    `ps5`. Players never need the stream key.
@@ -53,11 +53,18 @@ Nothing reaches Twitch.
    the Pi:
 
    ```bash
-   sudo docker exec pihole pihole-FTL --config misc.dnsmasq_lines '["address=/contribute.live-video.net/192.168.0.121"]'
+   sudo docker exec pihole pihole-FTL --config misc.dnsmasq_lines '["address=/contribute.live-video.net/192.168.0.121","address=/contribute.live-video.net/::","address=/global-contribute.live-video.net/192.168.0.121","address=/global-contribute.live-video.net/::"]'
+   sudo docker restart pihole
    ```
 
-   Check from the PC: `nslookup ingest.global-contribute.live-video.net 192.168.0.3` must answer
-   `192.168.0.121` (if not, `sudo docker restart pihole`). The PS5 caches DNS answers: restart it or reconnect
+   `global-contribute.live-video.net` is a separate domain, not a subdomain of `contribute.live-video.net`,
+   so both are listed. The `::` lines stop the PS5 from reaching Twitch over IPv6. The restart clears
+   Pi-hole's cache.
+
+   Check from the PC after `ipconfig /flushdns`: both
+   `nslookup ingest.global-contribute.live-video.net 192.168.0.3` and
+   `nslookup euc10.contribute.live-video.net 192.168.0.3` must answer only `192.168.0.121` and `::`.
+   Do not start the broadcast before that. The PS5 caches DNS answers: restart it or reconnect
    its network.
 3. On the PS5 press **Create → Broadcast → Twitch** and start.
 4. Watch:
