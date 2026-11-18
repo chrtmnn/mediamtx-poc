@@ -104,8 +104,22 @@ sudo docker restart pihole
 7. Share the player window in Discord.
 8. End the broadcast, close MediaMTX, switch the redirect off.
 
-With the default config the stream key is part of the URL and nothing is recorded. The planned next step is a
-Windows `mediamtx.yml` with the same relay and recording as the Docker variant (needs `ffmpeg` on the `PATH`).
+**Recording at the same time:** edit the `mediamtx.yml` next to the exe, section `pathDefaults:`, and restart
+MediaMTX:
+
+```yaml
+  record: true
+  recordPath: D:/Videos/PS5/%path/%Y-%m-%d_%H-%M-%S-%f_%z
+  recordDeleteAfter: 0s
+```
+
+- MediaMTX records every broadcast as fMP4 (`.mp4`, one file per hour) without re-encoding, independent of the
+  player. The file can be opened in VLC while it is still being written.
+- `recordDeleteAfter` defaults to `1d`, which deletes recordings after a day; `0s` keeps them.
+- `recordPath` must contain `%path`, so the subfolder is named `app\live_<stream key>`.
+
+With the default config the stream key is part of the playback URL. A Windows `mediamtx.yml` with the fixed
+`ps5` path from the Docker variant would remove that (needs `ffmpeg` on the `PATH`).
 
 ## Variant B: Docker (deferred)
 
