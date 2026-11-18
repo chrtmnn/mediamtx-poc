@@ -1,0 +1,20 @@
+name: ps5-discord-stream
+
+services:
+  mediamtx:
+    container_name: ps5-mediamtx
+    # The -ffmpeg variant is needed for the relay in mediamtx.yml.
+    image: bluenviron/mediamtx:${MEDIAMTX_IMAGE_TAG:-1.21.4-ffmpeg}
+    restart: "no"
+    # Mount the directory, not the file: git replaces files on pull (new inode),
+    # and a single-file bind mount would keep serving the old content.
+    command: ["/config/mediamtx.yml"]
+    ports:
+      # Must be reachable from the PS5, so not bound to 127.0.0.1.
+      - "1935:1935"
+    environment:
+      # Set RECORD=false in .env to only watch without saving.
+      MTX_PATHS_PS5_RECORD: ${RECORD:-true}
+    volumes:
+      - ./mediamtx:/config:ro
+      - ${RECORDINGS_DIR:-./recordings}:/recordings

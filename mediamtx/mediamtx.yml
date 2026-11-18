@@ -1,0 +1,61 @@
+# MediaMTX configuration for receiving the PS5's Twitch broadcast locally.
+# Keys not set here keep MediaMTX's built-in defaults.
+
+logLevel: info
+
+# Only RTMP is needed: the PS5 publishes via RTMP and mpv/OBS read via RTMP.
+rtmp: true
+rtmpAddress: :1935
+rtsp: false
+hls: false
+webrtc: false
+srt: false
+api: false
+metrics: false
+pprof: false
+playback: false
+moq: false
+
+authMethod: internal
+authInternalUsers:
+  # LAN: the PS5 may publish to app/<stream key>; anyone in the LAN may watch "ps5".
+  # The raw app/<key> path cannot be read from outside, so the stream key stays private.
+  - user: any
+    pass:
+    ips: []
+    permissions:
+      - action: publish
+        path: ~^app/
+      - action: read
+        path: ps5
+  # Inside the container: the relay below republishes to "ps5" and may read everything.
+  - user: any
+    pass:
+    ips: ["127.0.0.1", "::1"]
+    permissions:
+      - action: publish
+        path: ps5
+      - action: read
+        path:
+
+pathDefaults:
+  # MediaMTX deletes recordings after one day by default. Keep them.
+  recordDeleteAfter: 0s
+
+paths:
+  # Fixed playback path: rtmp://<host>/ps5. Recordings are written from here, so the
+  # stream key never ends up in a file name.
+  ps5:
+    record: true
+    recordPath: /recordings/%path_%Y-%m-%d_%H-%M-%S-%f_%z
+    recordFormat: fmp4
+    recordSegmentDuration: 1h
+
+  # The PS5 publishes to rtmp://<twitch ingest>/app/<stream key>. Relay it to "ps5"
+  # without re-encoding, so the key does not have to be known in advance.
+  "~^app/":
+    runOnAvailable: >-
+      ffmpeg -hide_banner -loglevel error
+      -i rtmp://127.0.0.1:1935/$MTX_PATH
+      -c copy -f flv rtmp://127.0.0.1:1935/ps5
+    runOnAvailableRestart: true
