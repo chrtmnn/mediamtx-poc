@@ -49,13 +49,16 @@ Nothing reaches Twitch.
    docker compose up -d
    ```
 
-2. **Switch the redirect on** in Pi-hole: Settings → All settings → Miscellaneous → `misc.dnsmasq_lines`, add
+2. **Switch the redirect on** in Pi-hole. `misc.dnsmasq_lines` is read-only in the web UI, so set it over SSH on
+   the Pi:
 
-   ```
-   address=/contribute.live-video.net/192.168.0.121
+   ```bash
+   sudo docker exec pihole pihole-FTL --config misc.dnsmasq_lines '["address=/contribute.live-video.net/192.168.0.121"]'
    ```
 
-   and save (Pi-hole restarts its resolver). The PS5 caches DNS answers: restart it or reconnect its network.
+   Check from the PC: `nslookup ingest.global-contribute.live-video.net 192.168.0.3` must answer
+   `192.168.0.121` (if not, `sudo docker restart pihole`). The PS5 caches DNS answers: restart it or reconnect
+   its network.
 3. On the PS5 press **Create → Broadcast → Twitch** and start.
 4. Watch:
 
@@ -67,7 +70,11 @@ Nothing reaches Twitch.
 5. Share the mpv/OBS window in Discord.
 6. Recordings land in `recordings/` as `ps5_<date>_<time>.mp4` (fMP4, one file per hour).
 
-**Stop:** end the broadcast, `docker compose down`, and **remove the Pi-hole line again** (see caveats).
+**Stop:** end the broadcast, `docker compose down`, and **switch the redirect off again** (see caveats):
+
+```bash
+sudo docker exec pihole pihole-FTL --config misc.dnsmasq_lines '[]'
+```
 
 ## Caveats
 
