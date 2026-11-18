@@ -6,7 +6,7 @@ Guidance for AI coding agents (Claude Code, Copilot, Cursor, Codex, etc.) workin
 
 Proof of concept: receive the PS5's Twitch broadcast on a PC in the home network instead of Twitch, show it in a
 window that can be shared in Discord, and record it. No application code, only a Compose file and a MediaMTX
-config. Runs under Docker Desktop on the Windows desktop PC.
+config. Tested natively with `mediamtx.exe` on the Windows desktop PC; the Docker variant is deferred.
 
 ## Layout
 
@@ -22,7 +22,7 @@ config. Runs under Docker Desktop on the Windows desktop PC.
 - Repository language is English; LF line endings, enforced by `.gitattributes`.
 - Pin the image to an exact version (`<version>-ffmpeg`, the relay needs ffmpeg). Never `latest`.
 - Never bind-mount a single git-managed file; mount its directory.
-- The DNS redirect is not part of this repo: it is one line in the existing Pi-hole (see README).
+- The DNS redirect is not part of this repo: it lives in the existing Pi-hole (`misc.dnsmasq_lines`, see README).
 - The stream key is the real Twitch key. Keep it out of file names, commits and screenshots. The raw
   `app/<key>` path is deliberately not readable from the LAN.
 - **Branch names:** New branches get a type prefix (`feat/`, `fix/`, `chore/`, `docs/`, …) followed by a short
